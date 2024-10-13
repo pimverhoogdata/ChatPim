@@ -42,17 +42,18 @@
 </div>
 
 <script>
-    async function sendMessage() {
-        const inputField = document.getElementById('user-input');
-        const chatBox = document.getElementById('chat');
-        const userMessage = inputField.value;
-        
-        if (!userMessage.trim()) return;
+   async function sendMessage() {
+    const inputField = document.getElementById('user-input');
+    const chatBox = document.getElementById('chat');
+    const userMessage = inputField.value;
 
-        // Append user's message to the chat
-        const userText = `<p><strong>You:</strong> ${userMessage}</p>`;
-        chatBox.innerHTML += userText;
+    if (!userMessage.trim()) return;
 
+    // Append user's message to the chat
+    const userText = `<p><strong>You:</strong> ${userMessage}</p>`;
+    chatBox.innerHTML += userText;
+
+    try {
         // Call the OpenAI API
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -66,17 +67,28 @@
             })
         });
 
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const responseData = await response.json();
         const botMessage = responseData.choices[0].message.content;
 
         // Append the bot's response to the chat
         const botText = `<p><strong>Chat P.I.M.:</strong> ${botMessage}</p>`;
         chatBox.innerHTML += botText;
-        
-        // Clear the input field
-        inputField.value = '';
-        chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        chatBox.innerHTML += `<p><strong>Chat P.I.M.:</strong> Oops, something went wrong! Please check your API key or try again later.</p>`;
     }
+
+    // Clear the input field
+    inputField.value = '';
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+
 </script>
 2
 </body>
